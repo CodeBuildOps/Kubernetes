@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reader-dep
+  labels:
+    tier: frontend-reader-dep
+spec:
+  template:
+    metadata:
+      name: reader-pod
+      labels:
+        tier: frontend-reader-pod
+    spec:
+      containers:
+      - name: reader-container
+        image: reader-app:v1.0 
+        ports:
+        - containerPort: 5001
+        env:
+        - name: DATABASE_HOST
+          value: db-svc       # Use DNS name or ClusterIP --> db-svc or 10.104.177.226
+        - name: DATABASE_PORT
+          value: "5432"
+        - name: DATABASE_USER
+          value: postgres
+        - name: DATABASE_PASSWORD
+          value: postgres
+        - name: DATABASE_NAME
+          value: messagedb
+        - name: DATABASE_TABLE_NAME
+          value: message
+        - name: READER_PORT
+          value: "5001"
+  replicas: 2
+  selector:
+    matchLabels:
+      tier: frontend-reader-pod

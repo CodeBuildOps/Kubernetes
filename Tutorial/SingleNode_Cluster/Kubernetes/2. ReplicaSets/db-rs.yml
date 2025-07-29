@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: db-rs
+  labels:
+    tier: backend-db-rs
+spec:
+  template:
+    metadata:
+      name: db-pod
+      labels:
+        tier: backend-db-pod
+    spec:
+      containers:
+      - name: db-container
+        image: db-app:v1.0 
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
+  replicas: 3
+  selector:
+    matchLabels:
+      tier: backend-db-pod

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata: 
+  name: db-svc
+  labels:
+    tier: backend-db-svc
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432  # Service port (exposed inside cluster)
+    targetPort: 5432  # Pod container port
+  selector:
+    tier: backend-db-pod

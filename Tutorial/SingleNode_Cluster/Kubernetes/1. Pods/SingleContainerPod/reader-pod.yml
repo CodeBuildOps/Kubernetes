@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: reader-pod
+  labels:
+    tier: frontend-reader-pod
+spec:
+  containers:
+  - name: reader-container
+    image: reader-app:v1.0 
+    ports:
+    - containerPort: 5001
+    env:
+    - name: DATABASE_HOST
+      value: db-app
+    - name: DATABASE_PORT
+      value: "5432"
+    - name: DATABASE_USER
+      value: postgres
+    - name: DATABASE_PASSWORD
+      value: postgres
+    - name: DATABASE_NAME
+      value: messagedb
+    - name: DATABASE_TABLE_NAME
+      value: message
+    - name: READER_PORT
+      value: "5001"

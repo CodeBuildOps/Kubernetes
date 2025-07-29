@@ -1,0 +1,51 @@
+Database Setup Instructions
+-------------------------------
+Database Name   : messagedb
+Table Name      : message
+
+Creating a Docker Image with Preloaded Database and Table
+--------------------------------------------------------------
+
+Directory Structure:
+    pg-init-demo/
+    ├── Dockerfile
+    └── init.sql
+
+Build the Docker Image:
+    > docker build -t db-app:1.0 .
+
+Run the Container:
+    > docker run -d \
+        --name new-db \
+        -e POSTGRES_USER=postgres \
+        -e POSTGRES_PASSWORD=postgres \
+        -p 5433:5432 \
+        db-app:1.0
+
+    Or using docker-compose:
+        > docker compose up -d
+
+Verify the Setup:
+    Run the following to connect and test the database inside the container:
+    > docker exec -it db-app_container psql -U postgres -d messagedb
+
+
+Step-by-Step Instructions
+-------------------------------
+
+Step 1: Drop the Database (if it exists)
+        > sudo -u postgres dropdb messagedb
+
+Step 2: Create a New Database
+        > sudo -u postgres createdb messagedb
+
+Step 3: Connect to PostgreSQL and Create the Table
+        > sudo -u postgres psql
+        Inside psql, run:
+            > \c messagedb
+            > CREATE TABLE IF NOT EXISTS message (
+                id SERIAL PRIMARY KEY,
+                content TEXT NOT NULL
+            );
+        Exit with:
+            > \q

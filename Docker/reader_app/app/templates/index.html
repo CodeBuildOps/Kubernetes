@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>📖 Reader App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(to right, #e3f2fd, #f8f9fa);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card, .modal-content {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        footer {
+            background: #212529;
+            color: #ccc;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="bg-primary text-white text-center py-4 shadow">
+        <h1 class="display-6"><i class="bi bi-journal-text"></i> Reader App</h1>
+        <p class="lead mb-0">Browse and manage all messages effortlessly.</p>
+    </header>
+
+    <!-- Main Section -->
+    <main class="container my-5 flex-grow-1">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card shadow-lg border-0">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4 text-center text-primary"><i class="bi bi-chat-left-text-fill"></i> Messages</h4>
+                        <div id="messagesList" class="list-group mb-4"></div>
+                        <div class="text-center">
+                            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmClearModal">
+                                <i class="bi bi-trash-fill"></i> Clear All
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Clear All Confirmation Modal -->
+    <div class="modal fade" id="confirmClearModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill text-warning"></i> Confirm Deletion</h5>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete all messages?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button id="confirmClearAllBtn" class="btn btn-danger">Clear All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-3 border-top shadow-lg text-center mt-auto">
+        <div class="container">
+            <span>🐳 <strong>Container ID:</strong> <span class="text-info">{{ container_id }}</span></span>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom Script -->
+    <script>
+    function deleteMessage(id) {
+        fetch(`/delete/${id}`, { method: 'POST' })
+            .then(() => loadMessages());
+    }
+
+    function loadMessages() {
+        fetch('/api/messages')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('messagesList');
+                container.innerHTML = '';
+
+                if (data.length === 0) {
+                    container.innerHTML = '<div class="alert alert-info text-center">No messages found.</div>';
+                    return;
+                }
+
+                data.forEach(msg => {
+                    const el = document.createElement('div');
+                    el.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    el.innerHTML = `
+                        <span>${msg.content}</span>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteMessage(${msg.id})">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    `;
+                    container.appendChild(el);
+                });
+            });
+    }
+
+    document.getElementById('confirmClearAllBtn').addEventListener('click', () => {
+        fetch('/delete_all', { method: 'POST' })
+            .then(() => {
+                loadMessages();
+                bootstrap.Modal.getInstance(document.getElementById('confirmClearModal')).hide();
+            });
+    });
+
+    loadMessages();
+    </script>
+</body>
+</html>
+

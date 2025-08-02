@@ -18,7 +18,7 @@ spec:
         - containerPort: 5001
         env:
         - name: DATABASE_HOST
-          value: db-app
+          value: db-svc
         - name: DATABASE_PORT
           value: "5432"
         - name: DATABASE_USER
@@ -31,7 +31,31 @@ spec:
           value: message
         - name: READER_PORT
           value: "5001"
-  replicas: 5
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+  replicas: 1
   selector:
     matchLabels:
       tier: frontend-reader-pod
+
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: reader-svc
+  labels:
+    tier: frontend-reader-svc
+spec:
+  type: NodePort
+  ports:
+  - port: 81
+    targetPort: 5001
+    nodePort: 30001    # 30000 - 32767
+  selector:
+    tier: frontend-reader-pod

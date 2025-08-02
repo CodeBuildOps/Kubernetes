@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-dep
+  labels:
+    tier: backend-db-dep
+spec:
+  template:
+    metadata:
+      name: db-pod
+      labels:
+        tier: backend-db-pod
+    spec:
+      containers:
+      - name: db-container
+        image: db-app:v1.0 
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+  replicas: 1
+  selector:
+    matchLabels:
+      tier: backend-db-pod
+
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: db-svc
+  labels:
+    tier: backend-db-svc
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432  # Service port (exposed inside cluster)
+    targetPort: 5432  # Pod container port
+  selector:
+    tier: backend-db-pod

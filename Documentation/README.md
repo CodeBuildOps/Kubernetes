@@ -1,1 +1,0 @@
-Kubernetes beginner to intermediate.

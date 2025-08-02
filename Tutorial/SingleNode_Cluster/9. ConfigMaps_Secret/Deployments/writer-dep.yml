@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: writer-dep
+  labels:
+    tier: frontend-writer-dep
+spec:
+  template:
+    metadata:
+      name: writer-pod
+      labels:
+        tier: frontend-writer-pod
+    spec:
+      containers:
+      - name: writer-container
+        image: writer-app:v1.0 
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: configmap
+              key: DATABASE_HOST
+        - name: DATABASE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: configmap
+              key: DATABASE_PORT
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: secret
+              key: DATABASE_USER
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: secret
+              key: DATABASE_PASSWORD
+        - name: DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: secret
+              key: DATABASE_NAME
+        - name: DATABASE_TABLE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: secret
+              key: DATABASE_TABLE_NAME
+        - name: WRITER_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: configmap
+              key: WRITER_PORT
+  replicas: 2
+  selector:
+    matchLabels:
+      tier: frontend-writer-pod
+
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: writer-svc
+  labels:
+    tier: frontend-writer-svc
+spec:
+  type: NodePort
+  ports:
+  - port: 81
+    targetPort: 5000
+    nodePort: 30000    # 30000 - 32767
+  selector:
+    tier: frontend-writer-pod

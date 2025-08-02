@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reader-dep
+  labels:
+    tier: frontend-reader-dep
+spec:
+  template:
+    metadata:
+      name: reader-pod
+      labels:
+        tier: frontend-reader-pod
+    spec:
+      containers:
+      - name: reader-container
+        image: reader-app:v1.0 
+        ports:
+        - containerPort: 5001
+        env:
+        - name: DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: configmap
+              key: DATABASE_HOST
+        - name: DATABASE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: configmap
+              key: DATABASE_PORT
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: secret
+              key: DATABASE_USER
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: secret
+              key: DATABASE_PASSWORD
+        - name: DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: secret
+              key: DATABASE_NAME
+        - name: DATABASE_TABLE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: secret
+              key: DATABASE_TABLE_NAME
+        - name: READER_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: configmap
+              key: READER_PORT
+  replicas: 2
+  selector:
+    matchLabels:
+      tier: frontend-reader-pod
+
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: reader-svc
+  labels:
+    tier: frontend-reader-svc
+spec:
+  type: NodePort
+  ports:
+  - port: 81
+    targetPort: 5001
+    nodePort: 30001    # 30000 - 32767
+  selector:
+    tier: frontend-reader-pod

@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: writer-dep
+  labels:
+    tier: frontend-writer-dep
+spec:
+  template:
+    metadata:
+      name: writer-pod
+      labels:
+        tier: frontend-writer-pod
+    spec:
+      containers:
+      - name: writer-container
+        image: acrsamplewebapp.azurecr.io/writer-app:v1.0 
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DATABASE_HOST
+          value: db-svc
+        - name: DATABASE_PORT
+          value: "5432"
+        - name: DATABASE_USER
+          value: postgres
+        - name: DATABASE_PASSWORD
+          value: postgres
+        - name: DATABASE_NAME
+          value: messagedb
+        - name: DATABASE_TABLE_NAME
+          value: message
+        - name: WRITER_PORT
+          value: "5000"
+      tolerations:
+      - key: "CriticalAddonsOnly"
+        operator: "Exists"
+  replicas: 1
+  selector:
+    matchLabels:
+      tier: frontend-writer-pod
+
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: writer-svc
+  labels:
+    tier: frontend-writer-svc
+spec:
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  selector:
+    tier: frontend-writer-pod

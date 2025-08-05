@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reader-dep
+  labels:
+    tier: frontend-reader-dep
+spec:
+  template:
+    metadata:
+      name: reader-pod
+      labels:
+        tier: frontend-reader-pod
+    spec:
+      initContainers:
+      - name: init-wait-for-db-app
+        image: postgres
+        command: ['sh', '-c', 'until pg_isready -h db-svc -p 5432; do echo waiting; sleep 2; done']
+
+      containers:
+      - name: reader-container
+        image: acrsamplewebapp.azurecr.io/reader-app:v1.0 
+        ports:
+        - containerPort: 5001
+        env:
+        - name: DATABASE_HOST
+          value: db-svc
+        - name: DATABASE_PORT
+          value: "5432"
+        - name: DATABASE_USER
+          value: postgres
+        - name: DATABASE_PASSWORD
+          value: postgres
+        - name: DATABASE_NAME
+          value: messagedb
+        - name: DATABASE_TABLE_NAME
+          value: message
+        - name: READER_PORT
+          value: "5001"
+  replicas: 1
+  selector:
+    matchLabels:
+      tier: frontend-reader-pod
+
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: reader-svc
+  labels:
+    tier: frontend-reader-svc
+spec:
+  type: NodePort
+  ports:
+  - port: 81
+    targetPort: 5001
+    nodePort: 30001    # 30000 - 32767
+  selector:
+    tier: frontend-reader-pod
